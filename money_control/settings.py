@@ -122,6 +122,10 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+#user uchun
+AUTH_USER_MODEL = 'account.CustomUser'
+
+LOGIN_URL = 'login'
 
 # settings.py
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

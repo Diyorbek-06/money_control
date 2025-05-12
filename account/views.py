@@ -1,15 +1,25 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.contrib import messages
 from .models import VerificationCode
 from django.utils import timezone
 from datetime import timedelta
 import random
+from django.contrib.auth import authenticate, login
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
 
+
+
+User = get_user_model()
 
 def generate_verification_code():
     return str(random.randint(100000, 999999))
+
+@login_required(login_url='login')  # Agar foydalanuvchi login qilmagan bo'lsa, login sahifasiga yo'naltiriladi
+def home(request):
+    return render(request, 'home.html')
 
 
 def signup(request):
@@ -33,7 +43,7 @@ def signup(request):
 
         # VerificationCode yozamiz
         code = generate_verification_code()
-        expires = timezone.now() + timedelta(minutes=10)
+        expires = timezone.now() + timedelta(minutes=5)
 
         VerificationCode.objects.create(email=email, code=code, expires_at=expires)
 
@@ -47,6 +57,25 @@ def signup(request):
 
     return render(request, 'signup.html')
 
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            messages.success(request, 'Muvaffaqiyatli tizimga kirdingiz.')
+            return redirect('home')  # o'z sahifangiz nomiga moslang
+        else:
+            messages.error(request, 'Login yoki parol noto‘g‘ri.')
+
+    return render(request, 'account/login.html')
+
+def logout_view(request):
+    logout(request)
+    return redirect('home')
 
 def verify_email(request):
     if request.method == 'POST':
@@ -72,5 +101,7 @@ def verify_email(request):
             return redirect('verify_email')
 
     return render(request, 'verify_email.html')
+
+
 
 # Create your views here.
