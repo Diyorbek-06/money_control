@@ -1,0 +1,18 @@
+<!-- templates/account/signup.html -->
+{% extends 'base.html' %}
+
+{% block title %}Ro‘yxatdan o‘tish{% endblock %}
+
+{% block content %}
+    <h2>Ro‘yxatdan o‘tish</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="Foydalanuvchi nomi" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="password" placeholder="Parol" required>
+        <input type="password" name="password2" placeholder="Parolni tasdiqlang" required>
+        <input type="file" name="avatar" accept="image/*" placeholder="Avatar">
+        <button type="submit">Ro‘yxatdan o‘tish</button>
+    </form>
+    <p>Allaqaqon ro‘yxatdan o‘tganmisiz? <a href="{% url 'account:login' %}">Kirish</a></p>
+{% endblock %}

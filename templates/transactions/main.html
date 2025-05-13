@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asosiy Sahifa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background: linear-gradient(135deg, #f5f7fa, #c3cfe2); min-height: 100vh; font-family: 'Arial', sans-serif; }
+        .header { background-color: #fff; padding: 15px 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .welcome-text { font-size: 1.2rem; font-weight: bold; color: #333; }
+        .logout-btn { background-color: #dc3545; color: white; border: none; padding: 8px 20px; border-radius: 20px; transition: background-color 0.3s; }
+        .logout-btn:hover { background-color: #c82333; }
+        .main-container { display: flex; justify-content: center; align-items: center; gap: 40px; padding: 20px; }
+        .circle-btn { width: 200px; height: 200px; border-radius: 50%; display: flex; justify-content: center; align-items: center; text-decoration: none; color: white; font-size: 1.5rem; font-weight: bold; transition: transform 0.3s, box-shadow 0.3s; box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
+        .circle-btn:hover { transform: scale(1.1); box-shadow: 0 12px 20px rgba(0,0,0,0.3); }
+        .income-btn { background: linear-gradient(45deg, #28a745, #34d058); }
+        .expense-btn { background: linear-gradient(45deg, #dc3545, #ff6666); }
+        .summary { text-align: center; margin: 20px; }
+        .chart-container { width: 50%; margin: 0 auto; padding: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header d-flex justify-content-between align-items-center">
+        <div class="welcome-text">Xush kelibsiz, {{ user.username }}!</div>
+        <a href="{% url 'account:logout' %}" class="logout-btn">Chiqish</a>
+    </div>
+    <div class="main-container">
+        <a href="{% url 'transactions:income_categories' %}" class="circle-btn income-btn">Kirim</a>
+        <a href="{% url 'transactions:expense_categories' %}" class="circle-btn expense-btn">Chiqim</a>
+    </div>
+    <div class="summary">
+        <p><strong>Umumiy Kirim:</strong> {{ total_income }} so‘m</p>
+        <p><strong>Umumiy Chiqim:</strong> {{ total_expense }} so‘m</p>
+        <p><strong>Balans:</strong> {{ balance }} so‘m</p>
+    </div>
+    <div class="chart-container">
+        <canvas id="financePieChart"></canvas>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const incomePercentage = {{ income_percentage }};
+        const expensePercentage = {{ expense_percentage }};
+
+        const ctx = document.getElementById('financePieChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Kirim', 'Chiqim'],
+                datasets: [{
+                    label: 'Moliyaviy Statistikalar',
+                    data: [incomePercentage, expensePercentage],
+                    backgroundColor: [
+                        'rgba(40, 167, 69, 0.7)',  // Yashil (Kirim)
+                        'rgba(220, 53, 69, 0.7)',  // Qizil (Chiqim)
+                    ],
+                    borderColor: [
+                        'rgba(40, 167, 69, 1)',
+                        'rgba(220, 53, 69, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    title: { display: true, text: 'Kirim va Chiqim Foizlari' }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

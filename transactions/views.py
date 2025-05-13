@@ -1,0 +1,192 @@
+#
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.db.models import Sum
+from .models import Category, Transaction
+
+@login_required(login_url='account:login')
+def main_page(request):
+    # Umumiy kirim va chiqimni hisoblash
+    total_income = Transaction.objects.filter(user=request.user, category__is_income=True).aggregate(Sum('amount'))['amount__sum'] or 0
+    total_expense = Transaction.objects.filter(user=request.user, category__is_income=False).aggregate(Sum('amount'))['amount__sum'] or 0
+    balance = total_income - total_expense
+
+    # Foizlarni hisoblash
+    total = total_income + total_expense if total_income + total_expense > 0 else 1  # 0 ga bo‘linishni oldini olish
+    income_percentage = (total_income / total) * 100 if total_income > 0 else 0
+    expense_percentage = (total_expense / total) * 100 if total_expense > 0 else 0
+
+    # Kategoriyalar bo‘yicha tranzaksiyalar (qo'shimcha ma'lumot uchun)
+    income_data = Category.objects.filter(user=request.user, is_income=True).annotate(total=Sum('transaction__amount')).values('name', 'total')
+    expense_data = Category.objects.filter(user=request.user, is_income=False).annotate(total=Sum('transaction__amount')).values('name', 'total')
+
+    return render(request, 'transactions/main.html', {
+        'total_income': total_income,
+        'total_expense': total_expense,
+        'balance': balance,
+        'income_percentage': income_percentage,
+        'expense_percentage': expense_percentage,
+        'income_data': list(income_data),
+        'expense_data': list(expense_data),
+    })
+
+@login_required(login_url='account:login')
+def manage_categories(request, category_type):
+    if request.method == 'POST':
+        category_name = request.POST.get('category_name')
+        if category_name:
+            Category.objects.get_or_create(user=request.user, name=category_name, is_income=(category_type == 'income'))
+            messages.success(request, f"Yangi {'kirim' if category_type == 'income' else 'chiqim'} kategoriyasi qo‘shildi.")
+        return redirect(f'transactions:{category_type}_categories')
+
+    # Default kategoriyalar
+    default_categories = {
+        'income': ['oylik', 'biznes', 'kunlik ish haqlari'],
+        'expense': ['oila', 'ovqat', 'kiyim', 'transport', 'sayohat', 'bayramlar', 'o\'quv kurslari', 'soliqlar', 'uy hayvoni uchun xarajatlar', 'magazin xaridlar']
+    }
+    categories = Category.objects.filter(user=request.user, is_income=(category_type == 'income'))
+    for cat in default_categories[category_type]:
+        Category.objects.get_or_create(user=request.user, name=cat, is_income=(category_type == 'income'))
+
+    context = {
+        'categories': categories,
+        'category_type': category_type,
+        'total': Transaction.objects.filter(user=request.user, category__is_income=(category_type == 'income')).aggregate(Sum('amount'))['amount__sum'] or 0
+    }
+    return render(request, f'transactions/{category_type}.html', context)
+
+@login_required(login_url='account:login')
+def add_transaction(request, category_type, category_id):
+    category = Category.objects.get(id=category_id, user=request.user, is_income=(category_type == 'income'))
+
+    if request.method == 'POST':
+        amount = request.POST.get('amount')
+        transaction_type = request.POST.get('type', 'cash')  # Default: naqd
+        description = request.POST.get('description', '')
+
+        if not amount:
+            messages.error(request, 'Miqdor kiritish majburiy.')
+            return redirect(f'transactions:add_{category_type}', category_id=category_id)
+
+        try:
+            amount = float(amount)
+            if amount <= 0:
+                raise ValueError("Miqdor 0 dan katta bo‘lishi kerak.")
+        except ValueError:
+            messages.error(request, 'Miqdor noto‘g‘ri kiritildi.')
+            return redirect(f'transactions:add_{category_type}', category_id=category_id)
+
+        Transaction.objects.create(
+            user=request.user,
+            category=category,
+            amount=amount,
+            type=transaction_type,
+            description=description
+        )
+        messages.success(request, f"{'Kirim' if category_type == 'income' else 'Chiqim'} muvaffaqiyatli qo‘shildi.")
+        return redirect('transactions:main_page')  # Asosiy sahifaga yo‘naltirish
+
+    return render(request, f'transactions/add_{category_type}.html', {'category': category})
+
+# URL'lar uchun alias'lar
+income_categories = lambda request: manage_categories(request, 'income')
+expense_categories = lambda request: manage_categories(request, 'expense')
+add_income = lambda request, category_id: add_transaction(request, 'income', category_id)
+add_expense = lambda request, category_id: add_transaction(request, 'expense', category_id)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# # Create your views here.
+# from django.shortcuts import render, redirect
+# from django.contrib.auth.decorators import login_required
+# from django.contrib import messages
+# from .models import Category, Transaction
+#
+# @login_required(login_url='account:login')
+# def main_page(request):
+#     return render(request, 'transactions/main.html')
+#
+# @login_required(login_url='account:login')
+# def income_categories(request):
+#     if request.method == 'POST':
+#         category_name = request.POST.get('category_name')
+#         if category_name:
+#             Category.objects.get_or_create(user=request.user, name=category_name, is_income=True)
+#             messages.success(request, 'Yangi kirim kategoriyasi qo‘shildi.')
+#         return redirect('transactions:income_categories')
+#
+#     # Default kategoriyalar
+#     default_categories = ['oylik', 'biznes', 'kunlik ish haqlari']
+#     categories = Category.objects.filter(user=request.user, is_income=True)
+#     for cat in default_categories:
+#         Category.objects.get_or_create(user=request.user, name=cat, is_income=True)
+#
+#     return render(request, 'transactions/income.html', {'categories': categories})
+#
+# @login_required(login_url='account:login')
+# def expense_categories(request):
+#     if request.method == 'POST':
+#         category_name = request.POST.get('category_name')
+#         if category_name:
+#             Category.objects.get_or_create(user=request.user, name=category_name, is_income=False)
+#             messages.success(request, 'Yangi chiqim kategoriyasi qo‘shildi.')
+#         return redirect('transactions:expense_categories')
+#
+#     # Default kategoriyalar
+#     default_categories = ['oila', 'ovqat', 'kiyim', 'transport', 'sayohat', 'bayramlar', 'o\'quv kurslari', 'soliqlar', 'uy hayvoni uchun xarajatlar', 'magazin xaridlar']
+#     categories = Category.objects.filter(user=request.user, is_income=False)
+#     for cat in default_categories:
+#         Category.objects.get_or_create(user=request.user, name=cat, is_income=False)
+#
+#     return render(request, 'transactions/expense.html', {'categories': categories})
+#
+# @login_required(login_url='account:login')
+# def add_transaction(request):
+#     if request.method == 'POST':
+#         amount = request.POST.get('amount')
+#         transaction_type = request.POST.get('type')
+#         category_id = request.POST.get('category')
+#         description = request.POST.get('description', '')
+#
+#         if not amount or not transaction_type or not category_id:
+#             messages.error(request, 'Barcha majburiy maydonlarni to‘ldiring.')
+#             return redirect(request.POST.get('next', 'transactions:main_page'))
+#
+#         try:
+#             amount = float(amount)
+#             if amount <= 0:
+#                 raise ValueError("Miqdor 0 dan katta bo‘lishi kerak.")
+#         except ValueError:
+#             messages.error(request, 'Miqdor noto‘g‘ri kiritildi.')
+#             return redirect(request.POST.get('next', 'transactions:main_page'))
+#
+#         category = Category.objects.get(id=category_id, user=request.user)
+#         Transaction.objects.create(
+#             user=request.user,
+#             category=category,
+#             amount=amount,
+#             type=transaction_type,
+#             description=description
+#         )
+#         messages.success(request, 'Tranzaksiya muvaffaqiyatli qo‘shildi.')
+#         return redirect(request.POST.get('next', 'transactions:main_page'))
+#
+#     return redirect('transactions:main_page')

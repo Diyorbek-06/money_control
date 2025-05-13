@@ -1,29 +1,15 @@
-<!DOCTYPE html>
-<html lang="uz">
-<head>
-    <meta charset="UTF-8">
-    <title>Kirish</title>
-</head>
-<body>
-    <h2>Hisobga kirish</h2>
+<!-- templates/account/login.html -->
+{% extends 'base.html' %}
 
-    {% if messages %}
-        <ul>
-            {% for message in messages %}
-                <li>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+{% block title %}Kirish{% endblock %}
 
-    <form method="post">
+{% block content %}
+    <h2>Tizimga kirish</h2>
+    <form method="POST">
         {% csrf_token %}
-        <label for="username">Foydalanuvchi nomi:</label>
-        <input type="text" name="username" id="username" required><br><br>
-
-        <label for="password">Parol:</label>
-        <input type="password" name="password" id="password" required><br><br>
-
+        <input type="text" name="username" placeholder="Foydalanuvchi nomi" required>
+        <input type="password" name="password" placeholder="Parol" required>
         <button type="submit">Kirish</button>
     </form>
-</body>
-</html>
+    <p>Ro‘yxatdan o‘tmaganmisiz? <a href="{% url 'account:signup' %}">Ro‘yxatdan o‘tish</a></p>
+{% endblock %}

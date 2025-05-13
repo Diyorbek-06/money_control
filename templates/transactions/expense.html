@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Chiqim Kategoriyalari{% endblock %}
+
+{% block content %}
+    <h2>Chiqim Kategoriyalari</h2>
+    <p><strong>Umumiy Chiqim:</strong> {{ total }} so‘m</p>
+    <ul>
+        {% for category in categories %}
+            <li><a href="{% url 'transactions:add_expense' category.id %}">{{ category.name }}</a></li>
+        {% endfor %}
+    </ul>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="category_name" placeholder="Yangi kategoriya nomi" required>
+        <button type="submit">Qo‘shish</button>
+    </form>
+    <a href="{% url 'transactions:main_page' %}">Orqaga qaytish</a>
+{% endblock %}

@@ -1,0 +1,15 @@
+<!-- templates/account/verify_email.html -->
+{% extends 'base.html' %}
+
+{% block title %}Email tasdiqlash{% endblock %}
+
+{% block content %}
+    <h2>Email tasdiqlash</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="text" name="code" placeholder="Tasdiqlash kodi" required>
+        <button type="submit">Tasdiqlash</button>
+    </form>
+    <p>Yangidan ro‘yxatdan o‘tish uchun: <a href="{% url 'account:signup' %}">Ro‘yxatdan o‘tish</a></p>
+{% endblock %}
