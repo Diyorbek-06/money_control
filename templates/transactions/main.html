@@ -8,11 +8,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background: linear-gradient(135deg, #fdfbfb, #ebedee);
+            background: linear-gradient(135deg, #1cb5e0, #000851); /* Feruza va ko‘k fon */
             font-family: 'Segoe UI', sans-serif;
             margin: 0;
             padding: 0;
             min-height: 100vh;
+            color: white;
         }
         .header {
             background-color: white;
@@ -40,11 +41,29 @@
         .logout-btn:hover {
             background-color: #e60000;
         }
+
+        .content-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 40px 20px;
+            gap: 40px;
+        }
+
+        .main-left {
+            flex: 1 1 400px;
+            max-width: 600px;
+        }
+
+        .main-right {
+            flex: 1 1 300px;
+        }
+
         .main-container {
             display: flex;
             justify-content: center;
             gap: 60px;
-            margin: 40px 0;
+            margin-bottom: 30px;
             flex-wrap: wrap;
         }
         .circle-btn {
@@ -72,26 +91,30 @@
             background: linear-gradient(135deg, #dc3545, #ff8585);
         }
         .summary {
-            text-align: center;
-            background: white;
-            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            margin-top: 20px;
             padding: 20px;
             border-radius: 20px;
-            max-width: 600px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
         .summary p {
             font-size: 1.1rem;
             margin-bottom: 10px;
-            color: #444;
         }
+
         .chart-container {
-            max-width: 350px;
-            margin: 0 auto 40px;
             background: white;
             padding: 20px;
             border-radius: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .content-wrapper {
+                flex-direction: column;
+                align-items: center;
+            }
         }
     </style>
 </head>
@@ -101,25 +124,31 @@
         <a href="{% url 'account:logout' %}" class="logout-btn">Chiqish</a>
     </div>
 
-    <div class="main-container">
-        <a href="{% url 'transactions:income_categories' %}" class="circle-btn income-btn">Kirim</a>
-        <a href="{% url 'transactions:expense_categories' %}" class="circle-btn expense-btn">Chiqim</a>
-    </div>
+    <div class="content-wrapper">
+        <div class="main-left">
+            <div class="main-container">
+                <a href="{% url 'transactions:income_categories' %}" class="circle-btn income-btn">Kirim</a>
+                <a href="{% url 'transactions:expense_categories' %}" class="circle-btn expense-btn">Chiqim</a>
+            </div>
 
-    <div class="summary">
-        <p><strong>Umumiy Kirim:</strong> {{ total_income }} so‘m</p>
-        <p><strong>Naqd Kirim:</strong> {{ cash_income }} so‘m</p>
-        <p><strong>Karta Kirimi:</strong> {{ card_income }} so‘m</p>
-        <hr>
-        <p><strong>Umumiy Chiqim:</strong> {{ total_expense }} so‘m</p>
-        <p><strong>Naqd Chiqim:</strong> {{ cash_expense }} so‘m</p>
-        <p><strong>Karta Chiqimi:</strong> {{ card_expense }} so‘m</p>
-        <hr>
-        <p><strong>Balans:</strong> {{ balance }} so‘m</p>
-    </div>
+            <div class="summary">
+                <p><strong>Umumiy Kirim:</strong> {{ total_income }} so‘m</p>
+                <p><strong>Naqd Kirim:</strong> {{ cash_income }} so‘m</p>
+                <p><strong>Karta Kirimi:</strong> {{ card_income }} so‘m</p>
+                <hr>
+                <p><strong>Umumiy Chiqim:</strong> {{ total_expense }} so‘m</p>
+                <p><strong>Naqd Chiqim:</strong> {{ cash_expense }} so‘m</p>
+                <p><strong>Karta Chiqimi:</strong> {{ card_expense }} so‘m</p>
+                <hr>
+                <p><strong>Balans:</strong> {{ balance }} so‘m</p>
+            </div>
+        </div>
 
-    <div class="chart-container">
-        <canvas id="financePieChart"></canvas>
+        <div class="main-right">
+            <div class="chart-container">
+                <canvas id="financePieChart"></canvas>
+            </div>
+        </div>
     </div>
 
     <script>
