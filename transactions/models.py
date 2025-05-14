@@ -1,6 +1,5 @@
 from django.db import models
 
-# Create your models here.
 from django.contrib.auth import get_user_model
 from datetime import date
 User = get_user_model()
@@ -8,7 +7,7 @@ User = get_user_model()
 class Category(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
-    is_income = models.BooleanField(default=False)  # True kirim, False chiqim uchun
+    is_income = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.name} ({'Kirim' if self.is_income else 'Chiqim'})"

@@ -7,24 +7,19 @@ from datetime import datetime, date
 
 @login_required(login_url='account:login')
 def main_page(request):
-    # Umumiy kirim va chiqimni hisoblash
     total_income = Transaction.objects.filter(user=request.user, category__is_income=True).aggregate(Sum('amount'))['amount__sum'] or 0
     total_expense = Transaction.objects.filter(user=request.user, category__is_income=False).aggregate(Sum('amount'))['amount__sum'] or 0
     balance = total_income - total_expense
 
-    # Naqd va karta bo‘yicha kirimlar
     cash_income = Transaction.objects.filter(user=request.user, category__is_income=True, type='cash').aggregate(Sum('amount'))['amount__sum'] or 0
     card_income = Transaction.objects.filter(user=request.user, category__is_income=True, type='card').aggregate(Sum('amount'))['amount__sum'] or 0
-    # Naqd va karta bo‘yicha chiqimlar
     cash_expense = Transaction.objects.filter(user=request.user, category__is_income=False, type='cash').aggregate(Sum('amount'))['amount__sum'] or 0
     card_expense = Transaction.objects.filter(user=request.user, category__is_income=False, type='card').aggregate(Sum('amount'))['amount__sum'] or 0
 
-    # Foizlarni hisoblash
     total = total_income + total_expense if total_income + total_expense > 0 else 1  # 0 ga bo‘linishni oldini olish
     income_percentage = (total_income / total) * 100 if total_income > 0 else 0
     expense_percentage = (total_expense / total) * 100 if total_expense > 0 else 0
 
-    # Kategoriyalar bo‘yicha tranzaksiyalar (qo'shimcha ma'lumot uchun)
     income_data = Category.objects.filter(user=request.user, is_income=True).annotate(total=Sum('transaction__amount')).values('name', 'total')
     expense_data = Category.objects.filter(user=request.user, is_income=False).annotate(total=Sum('transaction__amount')).values('name', 'total')
 
@@ -51,7 +46,6 @@ def manage_categories(request, category_type):
             messages.success(request, f"Yangi {'kirim' if category_type == 'income' else 'chiqim'} kategoriyasi qo‘shildi.")
         return redirect(f'transactions:{category_type}_categories')
 
-    # Default kategoriyalar
     default_categories = {
         'income': ['oylik', 'biznes', 'kunlik ish haqlari'],
         'expense': ['oila', 'ovqat', 'kiyim', 'transport', 'sayohat', 'bayramlar', 'o\'quv kurslari', 'soliqlar', 'uy hayvoni uchun xarajatlar', 'magazin xaridlar']
@@ -71,10 +65,8 @@ def manage_categories(request, category_type):
 def add_transaction(request, category_type, category_id):
     category = Category.objects.get(id=category_id, user=request.user, is_income=(category_type == 'income'))
 
-    # Kategoriyaga tegishli umumiy summani hisoblash
     category_total = Transaction.objects.filter(user=request.user, category=category).aggregate(Sum('amount'))['amount__sum'] or 0
 
-    # Kategoriyaga tegishli barcha tranzaksiyalarni olish
     transactions = Transaction.objects.filter(user=request.user, category=category).order_by('-date')
 
     if request.method == 'POST':
@@ -101,19 +93,18 @@ def add_transaction(request, category_type, category_id):
             amount=amount,
             type=transaction_type,
             description=description,
-            date=date_str  # Sana qo‘shildi
+            date=date_str
         )
         messages.success(request, f"{'Kirim' if category_type == 'income' else 'Chiqim'} muvaffaqiyatli qo‘shildi.")
-        return redirect(f'transactions:add_{category_type}', category_id=category_id)  # Qayta shu kategoriyaga qaytish
+        return redirect(f'transactions:add_{category_type}', category_id=category_id)
 
     return render(request, f'transactions/add_{category_type}.html', {
         'category': category,
-        'category_total': category_total,  # Umumiy summa
-        'transactions': transactions,  # Barcha tranzaksiyalar (sana, summa, tasnif)
-        'today': date.today()  # Bugungi sana kontekstga uzatildi
+        'category_total': category_total,
+        'transactions': transactions,
+        'today': date.today()
     })
 
-# URL'lar uchun alias'lar
 income_categories = lambda request: manage_categories(request, 'income')
 expense_categories = lambda request: manage_categories(request, 'expense')
 add_income = lambda request, category_id: add_transaction(request, 'income', category_id)
