@@ -3,17 +3,54 @@
 {% block title %}Kirim Kategoriyalari{% endblock %}
 
 {% block content %}
-    <h2>Kirim Kategoriyalari</h2>
-    <p><strong>Umumiy Kirim:</strong> {{ total }} so‘m</p>
-    <ul>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<div class="container my-4">
+    <h2 class="mb-4 text-center">Kirim Kategoriyalari</h2>
+    <p class="text-center"><strong>Umumiy Kirim:</strong> {{ total }} so‘m</p>
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 mb-4">
         {% for category in categories %}
-            <li><a href="{% url 'transactions:add_income' category.id %}">{{ category.name }}</a></li>
+            <div class="col">
+                <a href="{% url 'transactions:add_income' category.id %}" class="text-decoration-none">
+                    <div class="card text-center h-100 shadow-sm border-0 category-card">
+                        <div class="card-body">
+                            <!-- Kategoriya nomiga qarab ikonka belgilash -->
+                            {% if "oylik" in category.name|lower %}
+                                <i class="fas fa-money-bill-wave fa-2x text-success mb-3"></i>
+                            {% elif "biznes" in category.name|lower %}
+                                <i class="fas fa-briefcase fa-2x text-primary mb-3"></i>
+                            {% elif "hadya" in category.name|lower %}
+                                <i class="fas fa-gift fa-2x text-warning mb-3"></i>
+                            {% elif "invest" in category.name|lower %}
+                                <i class="fas fa-chart-line fa-2x text-info mb-3"></i>
+                            {% else %}
+                                <i class="fas fa-wallet fa-2x text-secondary mb-3"></i>
+                            {% endif %}
+                            <h5 class="card-title">{{ category.name }}</h5>
+                        </div>
+                    </div>
+                </a>
+            </div>
         {% endfor %}
-    </ul>
-    <form method="POST">
+    </div>
+
+    <form method="POST" class="d-flex justify-content-center gap-2 mb-4">
         {% csrf_token %}
-        <input type="text" name="category_name" placeholder="Yangi kategoriya nomi" required>
-        <button type="submit">Qo‘shish</button>
+        <input type="text" name="category_name" class="form-control w-50" placeholder="Yangi kategoriya nomi" required>
+        <button type="submit" class="btn btn-success">Qo‘shish</button>
     </form>
-    <a href="{% url 'transactions:main_page' %}">Orqaga qaytish</a>
+
+    <div class="text-center">
+        <a href="{% url 'transactions:main_page' %}" class="btn btn-outline-secondary">Orqaga qaytish</a>
+    </div>
+</div>
+
+<style>
+    .category-card:hover {
+        transform: scale(1.03);
+        transition: 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+</style>
 {% endblock %}

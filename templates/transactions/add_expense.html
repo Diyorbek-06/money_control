@@ -4,6 +4,23 @@
 
 {% block content %}
     <h2>{{ category.name }} uchun Chiqim Qo‘shish</h2>
+    <p><strong>Umumiy Chiqim:</strong> {{ category_total }} so‘m</p>
+    <h3>Oldingi Tranzaksiyalar:</h3>
+    {% if transactions %}
+        <ul>
+        {% for transaction in transactions %}
+            <li>
+                <strong>Sana:</strong> {{ transaction.date|date:'Y-m-d' }} |
+                <strong>Summa:</strong> {{ transaction.amount }} so‘m |
+                <strong>Tur:</strong> {{ transaction.get_type_display }} |
+                <strong>Tasnif:</strong> {{ transaction.description|default:"Tasnif kiritilmagan" }}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>Hozircha tranzaksiyalar yo‘q.</p>
+    {% endif %}
+    <h3>Yangi Chiqim Qo‘shish:</h3>
     <form method="POST">
         {% csrf_token %}
         <select name="type" required>
@@ -11,8 +28,10 @@
             <option value="card">Karta</option>
         </select>
         <input type="number" name="amount" placeholder="Miqdor (so‘m)" step="0.01" required>
-        <textarea name="description" placeholder="Tavsif (ixtiyoriy)"></textarea>
+        <input type="date" name="date" value="{{ today|date:'Y-m-d' }}" required>
+        <textarea name="description" placeholder="Tasnif (masalan, nima uchun sarflangan)"></textarea>
         <button type="submit">Qo‘shish</button>
     </form>
     <a href="{% url 'transactions:expense_categories' %}">Orqaga qaytish</a>
+    <a href="{% url 'transactions:main_page' %}">Bosh sahifaga o‘tish</a>
 {% endblock %}

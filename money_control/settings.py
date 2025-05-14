@@ -128,6 +128,13 @@ AUTH_USER_MODEL = 'account.CustomUser'
 
 LOGIN_URL = 'login'
 
+#static faly uchun
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "transactions/static",
+]
+
+
 # settings.py
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'

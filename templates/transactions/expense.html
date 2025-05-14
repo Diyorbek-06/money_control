@@ -3,17 +3,77 @@
 {% block title %}Chiqim Kategoriyalari{% endblock %}
 
 {% block content %}
-    <h2>Chiqim Kategoriyalari</h2>
-    <p><strong>Umumiy Chiqim:</strong> {{ total }} so‘m</p>
-    <ul>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<div class="container my-4">
+    <h2 class="mb-4 text-center">Chiqim Kategoriyalari</h2>
+    <p class="text-center"><strong>Umumiy Chiqim:</strong> {{ total }} so‘m</p>
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 mb-4">
         {% for category in categories %}
-            <li><a href="{% url 'transactions:add_expense' category.id %}">{{ category.name }}</a></li>
+            <div class="col">
+                <a href="{% url 'transactions:add_expense' category.id %}" class="text-decoration-none">
+                    <div class="card text-center h-100 shadow-sm border-0 category-card">
+                        <div class="card-body">
+                            {% with category.name|lower as name %}
+                                {% if "ovqat" in name %}
+                                    <i class="fas fa-utensils fa-2x text-danger mb-3"></i>
+                                {% elif "ijara" in name %}
+                                    <i class="fas fa-house-user fa-2x text-primary mb-3"></i>
+                                {% elif "transport" in name %}
+                                    <i class="fas fa-bus-alt fa-2x text-info mb-3"></i>
+                                {% elif "kommunal" in name %}
+                                    <i class="fas fa-lightbulb fa-2x text-warning mb-3"></i>
+                                {% elif "salomatlik" in name or "dorixona" in name %}
+                                    <i class="fas fa-hand-holding-medical fa-2x text-success mb-3"></i>
+                                {% elif "kiyim" in name %}
+                                    <i class="fas fa-tshirt fa-2x text-secondary mb-3"></i>
+                                {% elif "oila" in name %}
+                                    <i class="fas fa-people-roof fa-2x text-warning mb-3"></i>
+                                {% elif "kurs" in name or "ta'lim" in name or "o'quv" in name %}
+                                    <i class="fas fa-book-open fa-2x text-primary mb-3"></i>
+                                {% elif "hayvon" in name or "mushuk" in name or "it" in name %}
+                                    <i class="fas fa-paw fa-2x text-danger mb-3"></i>
+                                {% elif "telefon" in name %}
+                                    <i class="fas fa-mobile-alt fa-2x text-dark mb-3"></i>
+                                {% elif "internet" in name %}
+                                    <i class="fas fa-wifi fa-2x text-info mb-3"></i>
+                                {% elif "magazin" in name or "do'kon" in name %}
+                                    <i class="fas fa-store fa-2x text-primary mb-3"></i>
+                                {% elif "soliq" in name %}
+                                    <i class="fas fa-file-invoice-dollar fa-2x text-danger mb-3"></i>
+                                {% elif "sayohat" in name or "safarga" in name %}
+                                    <i class="fas fa-plane-departure fa-2x text-info mb-3"></i>
+                                {% elif "bayram" in name %}
+                                    <i class="fas fa-gift fa-2x text-success mb-3"></i>
+                                {% else %}
+                                    <i class="fas fa-money-bill-wave fa-2x text-muted mb-3"></i>
+                                {% endif %}
+                            {% endwith %}
+                            <h5 class="card-title">{{ category.name }}</h5>
+                        </div>
+                    </div>
+                </a>
+            </div>
         {% endfor %}
-    </ul>
-    <form method="POST">
+    </div>
+
+    <form method="POST" class="d-flex justify-content-center gap-2 mb-4">
         {% csrf_token %}
-        <input type="text" name="category_name" placeholder="Yangi kategoriya nomi" required>
-        <button type="submit">Qo‘shish</button>
+        <input type="text" name="category_name" class="form-control w-50" placeholder="Yangi kategoriya nomi" required>
+        <button type="submit" class="btn btn-danger">Qo‘shish</button>
     </form>
-    <a href="{% url 'transactions:main_page' %}">Orqaga qaytish</a>
+
+    <div class="text-center">
+        <a href="{% url 'transactions:main_page' %}" class="btn btn-outline-secondary">Orqaga qaytish</a>
+    </div>
+</div>
+
+<style>
+    .category-card:hover {
+        transform: scale(1.03);
+        transition: 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+</style>
 {% endblock %}
